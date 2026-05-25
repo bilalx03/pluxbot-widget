@@ -231,7 +231,7 @@
           <div id="_ox-status"><div id="_ox-status-dot"></div>${t('online')} · ${BOT_NAME}</div>
         </div>
         <div id="_ox-brand">Powered by<br/>Pluxbot</div>
-        <button id="_ox-close">✕</button>
+        <button id="_ox-lang" aria-label="Change language" style="background:none;border:none;cursor:pointer;font-size:18px;padding:4px 6px;margin-right:2px;line-height:1;opacity:0.85">${LANGS[curLang].flag}</button><button id="_ox-close">✕</button>
       </div>
       <div id="_ox-lead">
         <div id="_ox-lead-icon">👋</div>
