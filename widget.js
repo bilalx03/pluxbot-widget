@@ -17,6 +17,48 @@
     pill:    { btn:'999px',  panel:'24px', header:'24px 24px 0 0', avatar:'50%' },
     bold:    { btn:'4px',    panel:'4px',  header:'4px 4px 0 0',   avatar:'4px' },
   }[STYLE] || { btn:'50%', panel:'20px', header:'20px 20px 0 0', avatar:'50%' };
+
+  // ─── LANGUAGE SYSTEM ───────────────────────────────────
+  const LANGS = {
+    en: { flag: '🇬🇧', name: 'English',    aiName: 'English' },
+    es: { flag: '🇪🇸', name: 'Español',    aiName: 'Spanish' },
+    fr: { flag: '🇫🇷', name: 'Français',   aiName: 'French' },
+    de: { flag: '🇩🇪', name: 'Deutsch',    aiName: 'German' },
+    it: { flag: '🇮🇹', name: 'Italiano',   aiName: 'Italian' },
+    pt: { flag: '🇵🇹', name: 'Português',  aiName: 'Portuguese' },
+    nl: { flag: '🇳🇱', name: 'Nederlands', aiName: 'Dutch' },
+    da: { flag: '🇩🇰', name: 'Dansk',      aiName: 'Danish' },
+    sv: { flag: '🇸🇪', name: 'Svenska',    aiName: 'Swedish' },
+    no: { flag: '🇳🇴', name: 'Norsk',      aiName: 'Norwegian' },
+    fi: { flag: '🇫🇮', name: 'Suomi',      aiName: 'Finnish' },
+    pl: { flag: '🇵🇱', name: 'Polski',     aiName: 'Polish' },
+  };
+
+  const STRINGS = {
+    en: { online:'Online', placeholder:'Ask a question...', send:'Send', tagline:'Replies are instant', leadName:'Your name', leadEmail:'Your email address', leadStart:'Start Chatting →', leadSkip:'Skip for now', leadErr:'Please enter a valid name and email.', consent:'By chatting, you agree to your messages being processed to answer your questions.', privacy:'privacy notice' },
+    es: { online:'En línea', placeholder:'Haz una pregunta...', send:'Enviar', tagline:'Respuestas instantáneas', leadName:'Tu nombre', leadEmail:'Tu correo electrónico', leadStart:'Iniciar chat →', leadSkip:'Saltar por ahora', leadErr:'Por favor introduce un nombre y correo válidos.', consent:'Al chatear, aceptas que tus mensajes se procesen para responder tus preguntas.', privacy:'aviso de privacidad' },
+    fr: { online:'En ligne', placeholder:'Posez une question...', send:'Envoyer', tagline:'Réponses instantanées', leadName:'Votre nom', leadEmail:'Votre adresse e-mail', leadStart:'Commencer →', leadSkip:'Passer', leadErr:'Veuillez saisir un nom et un e-mail valides.', consent:'En discutant, vous acceptez que vos messages soient traités pour répondre à vos questions.', privacy:'avis de confidentialité' },
+    de: { online:'Online', placeholder:'Stelle eine Frage...', send:'Senden', tagline:'Sofortige Antworten', leadName:'Dein Name', leadEmail:'Deine E-Mail-Adresse', leadStart:'Chat starten →', leadSkip:'Überspringen', leadErr:'Bitte gültigen Namen und E-Mail eingeben.', consent:'Durch den Chat stimmst du der Verarbeitung deiner Nachrichten zu.', privacy:'Datenschutzhinweis' },
+    it: { online:'Online', placeholder:'Fai una domanda...', send:'Invia', tagline:'Risposte immediate', leadName:'Il tuo nome', leadEmail:'La tua email', leadStart:'Inizia chat →', leadSkip:'Salta per ora', leadErr:'Inserisci un nome e un\'email validi.', consent:'Chattando, accetti che i tuoi messaggi vengano elaborati per rispondere alle tue domande.', privacy:'informativa sulla privacy' },
+    pt: { online:'Online', placeholder:'Faça uma pergunta...', send:'Enviar', tagline:'Respostas instantâneas', leadName:'Seu nome', leadEmail:'Seu e-mail', leadStart:'Iniciar chat →', leadSkip:'Pular por agora', leadErr:'Por favor insira nome e e-mail válidos.', consent:'Ao conversar, você concorda que suas mensagens sejam processadas para responder às suas perguntas.', privacy:'aviso de privacidade' },
+    nl: { online:'Online', placeholder:'Stel een vraag...', send:'Verstuur', tagline:'Directe antwoorden', leadName:'Je naam', leadEmail:'Je e-mailadres', leadStart:'Start chat →', leadSkip:'Overslaan', leadErr:'Voer een geldige naam en e-mail in.', consent:'Door te chatten ga je akkoord dat je berichten verwerkt worden om je vragen te beantwoorden.', privacy:'privacyverklaring' },
+    da: { online:'Online', placeholder:'Stil et spørgsmål...', send:'Send', tagline:'Øjeblikkelige svar', leadName:'Dit navn', leadEmail:'Din e-mailadresse', leadStart:'Start chat →', leadSkip:'Spring over', leadErr:'Indtast venligst et gyldigt navn og e-mail.', consent:'Ved at chatte accepterer du, at dine beskeder behandles for at besvare dine spørgsmål.', privacy:'privatlivspolitik' },
+    sv: { online:'Online', placeholder:'Ställ en fråga...', send:'Skicka', tagline:'Omedelbara svar', leadName:'Ditt namn', leadEmail:'Din e-postadress', leadStart:'Starta chatt →', leadSkip:'Hoppa över', leadErr:'Ange ett giltigt namn och e-postadress.', consent:'Genom att chatta godkänner du att dina meddelanden behandlas för att besvara dina frågor.', privacy:'integritetspolicy' },
+    no: { online:'Online', placeholder:'Still et spørsmål...', send:'Send', tagline:'Umiddelbare svar', leadName:'Ditt navn', leadEmail:'Din e-postadresse', leadStart:'Start chat →', leadSkip:'Hopp over', leadErr:'Vennligst skriv inn gyldig navn og e-post.', consent:'Ved å chatte godtar du at meldingene dine behandles for å svare på spørsmål.', privacy:'personvernerklæring' },
+    fi: { online:'Verkossa', placeholder:'Esitä kysymys...', send:'Lähetä', tagline:'Välittömät vastaukset', leadName:'Nimesi', leadEmail:'Sähköpostiosoitteesi', leadStart:'Aloita chat →', leadSkip:'Ohita', leadErr:'Anna kelvollinen nimi ja sähköposti.', consent:'Keskustelemalla hyväksyt, että viestisi käsitellään kysymyksiisi vastaamiseksi.', privacy:'tietosuojailmoitus' },
+    pl: { online:'Online', placeholder:'Zadaj pytanie...', send:'Wyślij', tagline:'Natychmiastowe odpowiedzi', leadName:'Twoje imię', leadEmail:'Twój adres e-mail', leadStart:'Rozpocznij czat →', leadSkip:'Pomiń', leadErr:'Wprowadź prawidłowe imię i e-mail.', consent:'Czatując, zgadzasz się, aby Twoje wiadomości były przetwarzane w celu odpowiedzi na pytania.', privacy:'polityka prywatności' },
+  };
+
+  // Detect language: localStorage > browser > English
+  function detectLang() {
+    const saved = localStorage.getItem('pluxbot_lang');
+    if (saved && LANGS[saved]) return saved;
+    const browser = (navigator.language || 'en').slice(0, 2);
+    return LANGS[browser] ? browser : 'en';
+  }
+
+  let curLang = detectLang();
+  function t(key) { return (STRINGS[curLang] && STRINGS[curLang][key]) || STRINGS.en[key] || key; }
   if (!CLIENT_ID) { console.warn('[Pluxbot] No id param found.'); return; }
 
   const API = 'https://pluxbot.com/api/chat';
@@ -113,6 +155,68 @@
   ].join('');
   document.head.appendChild(dynSt);
 
+  // Language picker: build the grid and handle clicks
+  function buildLangMenu() {
+    const grid = document.getElementById('_ox-lang-grid');
+    if (!grid) return;
+    grid.innerHTML = Object.entries(LANGS).map(([code, l]) => 
+      `<button data-lang="${code}" title="${l.name}" style="background:${code===curLang?'rgba(91,142,232,0.25)':'transparent'};border:none;cursor:pointer;font-size:20px;padding:8px;border-radius:8px;line-height:1;transition:background 0.15s">${l.flag}</button>`
+    ).join('');
+    grid.querySelectorAll('button').forEach(b => {
+      b.addEventListener('click', () => {
+        const newLang = b.dataset.lang;
+        if (newLang === curLang) return;
+        curLang = newLang;
+        localStorage.setItem('pluxbot_lang', newLang);
+        document.getElementById('_ox-lang').textContent = LANGS[curLang].flag;
+        document.getElementById('_ox-lang-menu').style.display = 'none';
+        // Re-render UI strings
+        applyTranslations();
+        buildLangMenu();
+      });
+    });
+  }
+
+  function applyTranslations() {
+    const stat = document.getElementById('_ox-status');
+    if (stat) stat.innerHTML = '<div id="_ox-status-dot"></div>' + t('online') + ' · ' + BOT_NAME;
+    const nameInput = document.getElementById('_ox-lead-name');
+    if (nameInput) nameInput.placeholder = t('leadName');
+    const emailInput = document.getElementById('_ox-lead-email');
+    if (emailInput) emailInput.placeholder = t('leadEmail');
+    const leadBtn = document.getElementById('_ox-lead-btn');
+    if (leadBtn) leadBtn.textContent = t('leadStart');
+    const leadSkip = document.getElementById('_ox-lead-skip');
+    if (leadSkip) leadSkip.textContent = t('leadSkip');
+    const leadErr = document.getElementById('_ox-lead-err');
+    if (leadErr) leadErr.textContent = t('leadErr');
+    const inp = document.getElementById('_ox-in');
+    if (inp) inp.placeholder = t('placeholder');
+    const tag = document.getElementById('_ox-tag');
+    if (tag) tag.innerHTML = 'Pluxbot · ' + t('tagline');
+    const consent = document.getElementById('_ox-consent');
+    if (consent) consent.innerHTML = t('consent') + ' <a href="https://pluxbot.com/privacy" target="_blank" style="color:rgba(80,130,220,0.7);text-decoration:underline">' + t('privacy') + '</a>.';
+  }
+
+  // Open/close dropdown
+  setTimeout(() => {
+    const langBtn = document.getElementById('_ox-lang');
+    const langMenu = document.getElementById('_ox-lang-menu');
+    if (langBtn && langMenu) {
+      langBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        langMenu.style.display = langMenu.style.display === 'none' ? 'block' : 'none';
+        if (langMenu.style.display === 'block') buildLangMenu();
+      });
+      document.addEventListener('click', (e) => {
+        if (!langMenu.contains(e.target) && e.target !== langBtn) {
+          langMenu.style.display = 'none';
+        }
+      });
+    }
+    buildLangMenu();
+  }, 200);
+
   /* ── BUILD HTML ── */
   const wrap = document.createElement('div');
   wrap.id = '_ox-wrap';
@@ -124,7 +228,7 @@
         <div id="_ox-av"><span>${initLetter}</span><div id="_ox-av-dot"></div></div>
         <div id="_ox-hd-text">
           <div id="_ox-biz">${BIZ_RAW}</div>
-          <div id="_ox-status"><div id="_ox-status-dot"></div>Online · ${BOT_NAME}</div>
+          <div id="_ox-status"><div id="_ox-status-dot"></div>${t('online')} · ${BOT_NAME}</div>
         </div>
         <div id="_ox-brand">Powered by<br/>Pluxbot</div>
         <button id="_ox-close">✕</button>
@@ -133,20 +237,23 @@
         <div id="_ox-lead-icon">👋</div>
         <h3>Before we chat…</h3>
         <p>Drop your name and email so ${BIZ_RAW} can follow up with you if needed.</p>
-        <input class="_ox-lead-input" id="_ox-lead-name" type="text" placeholder="Your name" autocomplete="name"/>
-        <input class="_ox-lead-input" id="_ox-lead-email" type="email" placeholder="Your email address" autocomplete="email"/>
-        <div id="_ox-lead-err">Please enter a valid name and email.</div>
-        <button id="_ox-lead-btn">Start Chatting →</button>
-        <button id="_ox-lead-skip">Skip for now</button>
-        <div id="_ox-consent" style="font-size:10px;color:rgba(8,12,28,0.4);text-align:center;line-height:1.5;margin-top:8px;max-width:280px">By chatting, you agree to your messages being processed to answer your questions. Read our <a href="https://pluxbot.com/privacy" target="_blank" style="color:rgba(80,130,220,0.7);text-decoration:underline">privacy notice</a>.</div>
+        <input class="_ox-lead-input" id="_ox-lead-name" type="text" placeholder="${t('leadName')}" autocomplete="name"/>
+        <input class="_ox-lead-input" id="_ox-lead-email" type="email" placeholder="${t('leadEmail')}" autocomplete="email"/>
+        <div id="_ox-lead-err">${t('leadErr')}</div>
+        <button id="_ox-lead-btn">${t('leadStart')}</button>
+        <button id="_ox-lead-skip">${t('leadSkip')}</button>
+        <div id="_ox-consent" style="font-size:10px;color:rgba(8,12,28,0.4);text-align:center;line-height:1.5;margin-top:8px;max-width:280px">${t('consent')} <a href="https://pluxbot.com/privacy" target="_blank" style="color:rgba(80,130,220,0.7);text-decoration:underline">${t('privacy')}</a>.</div>
       </div>
       <div id="_ox-msgs" style="display:none"></div>
       <div id="_ox-chips" style="display:none"></div>
       <div id="_ox-foot" style="display:none">
-        <input id="_ox-in" type="text" placeholder="Ask a question..." autocomplete="off"/>
+        <input id="_ox-in" type="text" placeholder="${t('placeholder')}" autocomplete="off"/>
         <button id="_ox-send"><svg viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg></button>
       </div>
-      <div id="_ox-tag">Pluxbot · Replies are instant</div>
+      <div id="_ox-tag">Pluxbot · ${t('tagline')}</div>
+      <div id="_ox-lang-menu" style="display:none;position:absolute;top:54px;right:12px;background:rgba(20,24,38,0.98);backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:8px;box-shadow:0 12px 32px rgba(0,0,0,0.4);z-index:10;max-width:200px">
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:4px" id="_ox-lang-grid"></div>
+      </div>
     </div>
     <div id="_ox-btn"><span id="_ox-icon">💬</span><div id="_ox-dot"></div></div>
   `;
@@ -272,7 +379,7 @@
     addMsg('user',text);showTyping();
     history.push({role:'user',content:text});
     try{
-      const res=await fetch(API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({clientId:CLIENT_ID,messages:history})});
+      const res=await fetch(API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({clientId:CLIENT_ID,messages:history,language:LANGS[curLang].aiName})});
       const data=await res.json();hideTyping();
       const answer=data.answer||"I'm not sure about that — please contact us directly.";
       addMsg('bot',answer);
