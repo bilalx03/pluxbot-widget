@@ -20,19 +20,22 @@
 
   // ─── LANGUAGE SYSTEM ───────────────────────────────────
   const LANGS = {
-    en: { flag: '🇬🇧', name: 'English',    aiName: 'English' },
-    es: { flag: '🇪🇸', name: 'Español',    aiName: 'Spanish' },
-    fr: { flag: '🇫🇷', name: 'Français',   aiName: 'French' },
-    de: { flag: '🇩🇪', name: 'Deutsch',    aiName: 'German' },
-    it: { flag: '🇮🇹', name: 'Italiano',   aiName: 'Italian' },
-    pt: { flag: '🇵🇹', name: 'Português',  aiName: 'Portuguese' },
-    nl: { flag: '🇳🇱', name: 'Nederlands', aiName: 'Dutch' },
-    da: { flag: '🇩🇰', name: 'Dansk',      aiName: 'Danish' },
-    sv: { flag: '🇸🇪', name: 'Svenska',    aiName: 'Swedish' },
-    no: { flag: '🇳🇴', name: 'Norsk',      aiName: 'Norwegian' },
-    fi: { flag: '🇫🇮', name: 'Suomi',      aiName: 'Finnish' },
-    pl: { flag: '🇵🇱', name: 'Polski',     aiName: 'Polish' },
+    en: { cc: 'gb', name: 'English',    aiName: 'English' },
+    es: { cc: 'es', name: 'Español',    aiName: 'Spanish' },
+    fr: { cc: 'fr', name: 'Français',   aiName: 'French' },
+    de: { cc: 'de', name: 'Deutsch',    aiName: 'German' },
+    it: { cc: 'it', name: 'Italiano',   aiName: 'Italian' },
+    pt: { cc: 'pt', name: 'Português',  aiName: 'Portuguese' },
+    nl: { cc: 'nl', name: 'Nederlands', aiName: 'Dutch' },
+    da: { cc: 'dk', name: 'Dansk',      aiName: 'Danish' },
+    sv: { cc: 'se', name: 'Svenska',    aiName: 'Swedish' },
+    no: { cc: 'no', name: 'Norsk',      aiName: 'Norwegian' },
+    fi: { cc: 'fi', name: 'Suomi',      aiName: 'Finnish' },
+    pl: { cc: 'pl', name: 'Polski',     aiName: 'Polish' },
   };
+  function widgetFlag(cc) {
+    return '<img src="https://flagcdn.com/w40/' + cc + '.png" alt="" style="width:20px;height:15px;border-radius:2px;object-fit:cover;display:block"/>';
+  }
 
   const STRINGS = {
     en: { online:'Online', placeholder:'Ask a question...', send:'Send', tagline:'Replies are instant', leadName:'Your name', leadEmail:'Your email address', leadStart:'Start Chatting →', leadSkip:'Skip for now', leadErr:'Please enter a valid name and email.', consent:'By chatting, you agree to your messages being processed to answer your questions.', privacy:'privacy notice' },
@@ -160,7 +163,7 @@
     const grid = document.getElementById('_ox-lang-grid');
     if (!grid) return;
     grid.innerHTML = Object.entries(LANGS).map(([code, l]) => 
-      `<button data-lang="${code}" title="${l.name}" style="background:${code===curLang?'rgba(91,142,232,0.25)':'transparent'};border:none;cursor:pointer;font-size:20px;padding:8px;border-radius:8px;line-height:1;transition:background 0.15s">${l.flag}</button>`
+      `<button data-lang="${code}" title="${l.name}" style="background:${code===curLang?'rgba(91,142,232,0.25)':'transparent'};border:none;cursor:pointer;padding:8px;border-radius:8px;display:flex;align-items:center;justify-content:center;transition:background 0.15s">${widgetFlag(l.cc)}</button>`
     ).join('');
     grid.querySelectorAll('button').forEach(b => {
       b.addEventListener('click', () => {
@@ -168,7 +171,7 @@
         if (newLang === curLang) return;
         curLang = newLang;
         localStorage.setItem('pluxbot_lang', newLang);
-        document.getElementById('_ox-lang').textContent = LANGS[curLang].flag;
+        document.getElementById('_ox-lang').innerHTML = widgetFlag(LANGS[curLang].cc);
         document.getElementById('_ox-lang-menu').style.display = 'none';
         // Re-render UI strings
         applyTranslations();
@@ -231,7 +234,7 @@
           <div id="_ox-status"><div id="_ox-status-dot"></div>${t('online')} · ${BOT_NAME}</div>
         </div>
         <div id="_ox-brand">Powered by<br/>Pluxbot</div>
-        <button id="_ox-lang" aria-label="Change language" style="background:none;border:none;cursor:pointer;font-size:18px;padding:4px 6px;margin-right:2px;line-height:1;opacity:0.85">${LANGS[curLang].flag}</button><button id="_ox-close">✕</button>
+        <button id="_ox-lang" aria-label="Change language" style="background:none;border:none;cursor:pointer;font-size:18px;padding:4px 6px;margin-right:2px;line-height:1;opacity:0.85">${widgetFlag(LANGS[curLang].cc)}</button><button id="_ox-close">✕</button>
       </div>
       <div id="_ox-lead">
         <div id="_ox-lead-icon">👋</div>
