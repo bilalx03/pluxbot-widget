@@ -11,6 +11,7 @@
   const GREETING = p.get('greet') ? decodeURIComponent(p.get('greet')) : '';
   const INDUSTRY = p.get('ind') ? decodeURIComponent(p.get('ind')) : 'other';
   const STYLE = p.get('style') || 'classic';
+  const IS_TEST = p.get('test') === '1';
   const SC = {
     classic: { btn:'50%',    panel:'20px', header:'20px 20px 0 0', avatar:'50%' },
     modern:  { btn:'14px',   panel:'12px', header:'12px 12px 0 0', avatar:'8px' },
@@ -364,7 +365,7 @@
   function startChat(){
     leadDiv.style.display='none';msgs.style.display='flex';chips.style.display='flex';foot.style.display='flex';
     leadDone=true;
-    createConversation(visitorName,visitorEmail);
+    if(!IS_TEST) createConversation(visitorName,visitorEmail);
     if(!greeted){greet();greeted=true;}
     input.focus();
   }
@@ -383,7 +384,7 @@
     if(!name||!emailOk){leadErr.style.display='block';return;}
     leadErr.style.display='none';
     visitorName=name;visitorEmail=email;
-    saveLead(name,email);
+    if(!IS_TEST) saveLead(name,email);
     startChat();
   });
   leadEmail.addEventListener('keydown',e=>{if(e.key==='Enter')leadBtn.click()});
