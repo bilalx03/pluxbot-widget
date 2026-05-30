@@ -79,7 +79,42 @@
     realestate: ['Do you have properties available?','How do I book a viewing?','What areas do you cover?','What are your fees?'],
     other:      ['What are your hours?','What services do you offer?','How much does it cost?','Where are you located?'],
   };
-  function getChips() { return INDUSTRY_CHIPS[INDUSTRY] || INDUSTRY_CHIPS['other']; }
+  // Generic chip translations per language (works for all industries)
+  const CHIP_TRANSLATIONS = {
+    en: { hours:'What are your hours?', services:'What services do you offer?', cost:'How much does it cost?', location:'Where are you located?', book:'How do I book an appointment?', delivery:'Do you offer delivery?', returns:'What is your return policy?' },
+    es: { hours:'¿Cuál es su horario?', services:'¿Qué servicios ofrecen?', cost:'¿Cuánto cuesta?', location:'¿Dónde se encuentran?', book:'¿Cómo reservo una cita?', delivery:'¿Hacen entregas?', returns:'¿Cuál es su política de devoluciones?' },
+    fr: { hours:'Quels sont vos horaires?', services:'Quels services proposez-vous?', cost:'Combien ça coûte?', location:'Où êtes-vous situés?', book:'Comment prendre rendez-vous?', delivery:'Faites-vous la livraison?', returns:'Quelle est votre politique de retour?' },
+    de: { hours:'Wie sind eure Öffnungszeiten?', services:'Welche Dienstleistungen bietet ihr an?', cost:'Wie viel kostet es?', location:'Wo befindet ihr euch?', book:'Wie buche ich einen Termin?', delivery:'Bietet ihr Lieferung an?', returns:'Wie ist eure Rückgaberichtlinie?' },
+    it: { hours:'Quali sono i vostri orari?', services:'Quali servizi offrite?', cost:'Quanto costa?', location:'Dove vi trovate?', book:'Come prenoto un appuntamento?', delivery:'Effettuate consegne?', returns:'Qual è la vostra politica di reso?' },
+    pt: { hours:'Qual o vosso horário?', services:'Que serviços oferecem?', cost:'Quanto custa?', location:'Onde estão localizados?', book:'Como marco uma consulta?', delivery:'Fazem entregas?', returns:'Qual a vossa política de devoluções?' },
+    nl: { hours:'Wat zijn jullie openingstijden?', services:'Welke diensten bieden jullie?', cost:'Hoeveel kost het?', location:'Waar zijn jullie gevestigd?', book:'Hoe maak ik een afspraak?', delivery:'Bieden jullie bezorging?', returns:'Wat is jullie retourbeleid?' },
+    da: { hours:'Hvad er jeres åbningstider?', services:'Hvilke ydelser tilbyder I?', cost:'Hvor meget koster det?', location:'Hvor ligger I?', book:'Hvordan bestiller jeg en tid?', delivery:'Tilbyder I levering?', returns:'Hvad er jeres returpolitik?' },
+    sv: { hours:'Vilka är era öppettider?', services:'Vilka tjänster erbjuder ni?', cost:'Vad kostar det?', location:'Var är ni belägna?', book:'Hur bokar jag en tid?', delivery:'Erbjuder ni leverans?', returns:'Vad är er returpolicy?' },
+    no: { hours:'Hva er åpningstidene?', services:'Hvilke tjenester tilbyr dere?', cost:'Hvor mye koster det?', location:'Hvor er dere lokalisert?', book:'Hvordan bestiller jeg time?', delivery:'Tilbyr dere levering?', returns:'Hva er deres returregler?' },
+    fi: { hours:'Mitkä ovat aukioloaikanne?', services:'Mitä palveluja tarjoatte?', cost:'Paljonko se maksaa?', location:'Missä sijaitsette?', book:'Miten varaan ajan?', delivery:'Tarjoatteko toimituksen?', returns:'Mikä on palautuskäytäntönne?' },
+    pl: { hours:'Jakie są godziny otwarcia?', services:'Jakie usługi oferujecie?', cost:'Ile to kosztuje?', location:'Gdzie się znajdujecie?', book:'Jak umówić wizytę?', delivery:'Czy oferujecie dostawę?', returns:'Jaka jest polityka zwrotów?' },
+  };
+
+  // Industry → which chip keys to show
+  const INDUSTRY_CHIP_KEYS = {
+    restaurant: ['hours','services','cost','location'],
+    salon:      ['book','services','cost','hours'],
+    gym:        ['cost','services','hours','location'],
+    clinic:     ['book','hours','location','services'],
+    retail:     ['hours','delivery','returns','location'],
+    legal:      ['services','cost','book','location'],
+    realestate: ['services','book','location','cost'],
+    marketplace:['services','cost','delivery','returns'],
+    social:     ['services','cost','location','hours'],
+    ecommerce:  ['delivery','returns','services','cost'],
+    other:      ['hours','services','cost','location'],
+  };
+
+  function getChips() {
+    const keys = INDUSTRY_CHIP_KEYS[INDUSTRY] || INDUSTRY_CHIP_KEYS['other'];
+    const lang = CHIP_TRANSLATIONS[curLang] ? curLang : 'en';
+    return keys.map(k => CHIP_TRANSLATIONS[lang][k] || CHIP_TRANSLATIONS.en[k]).filter(Boolean);
+  }
 
   /* ── INJECT STYLES ── */
   const S = document.createElement('style');
@@ -176,6 +211,20 @@
         // Re-render UI strings
         applyTranslations();
         buildLangMenu();
+        // Re-render chips in new language
+        const chipsEl = document.getElementById('_ox-chips');
+        if (chipsEl && chipsEl.style.display !== 'none' && typeof showChips === 'function') {
+          showChips();
+        } else if (chipsEl && chipsEl.children.length > 0) {
+          chipsEl.innerHTML = '';
+          getChips().forEach(q => {
+            const c = document.createElement('button');
+            c.className = '_ox-chip';
+            c.textContent = q;
+            c.addEventListener('click', () => { chipsEl.innerHTML=''; sendMsg(q); });
+            chipsEl.appendChild(c);
+          });
+        }
       });
     });
   }
@@ -342,9 +391,45 @@
   leadSkip.addEventListener('click',startChat);
 
   /* ── GREETING ── */
-  function greet(){
-    addMsg('bot',GREETING||`Hi! 👋 I'm <strong>${BOT_NAME}</strong>, the ${BIZ_RAW} assistant. How can I help you today?`);
+  // Cache translated greetings to avoid re-translating
+  const greetingCache = { en: null };
+  async function translateGreeting(text, targetLangCode) {
+    if (targetLangCode === 'en') return text;
+    if (greetingCache[targetLangCode]) return greetingCache[targetLangCode];
+    try {
+      const res = await fetch('https://pluxbot.com/api/translate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ strings: [text], lang: targetLangCode })
+      });
+      const data = await res.json();
+      if (data.translations && data.translations[0]) {
+        greetingCache[targetLangCode] = data.translations[0];
+        return data.translations[0];
+      }
+    } catch (e) { /* silent fail, show English */ }
+    return text;
+  }
+  async function greet(){
+    const baseGreeting = GREETING || `Hi! 👋 I'm <strong>${BOT_NAME}</strong>, the ${BIZ_RAW} assistant. How can I help you today?`;
+    if (curLang === 'en') {
+      addMsg('bot', baseGreeting);
+      showChips(getChips());
+      return;
+    }
+    // Show original immediately, swap when translation arrives
+    addMsg('bot', baseGreeting);
     showChips(getChips());
+    const translated = await translateGreeting(baseGreeting, curLang);
+    if (translated && translated !== baseGreeting) {
+      // Replace the last bot message with translated version
+      const allBotMsgs = msgs.querySelectorAll('._ox-bot');
+      const lastBot = allBotMsgs[allBotMsgs.length - 1];
+      if (lastBot) {
+        const bubble = lastBot.querySelector('._ox-bubble');
+        if (bubble) bubble.innerHTML = translated;
+      }
+    }
   }
 
   /* ── CHIPS ── */
