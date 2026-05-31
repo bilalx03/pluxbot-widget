@@ -474,10 +474,86 @@
       addMsg('bot',answer);
       history.push({role:'assistant',content:answer});
       updateConversation();
+      // SMART LEAD CAPTURE: AI flagged this as a good moment to ask for contact
+      if (data.askForContact && !visitorEmail) {
+        showInlineLeadPrompt(data.askForContact);
+      }
     }catch(e){
       hideTyping();addMsg('bot','Sorry, something went wrong. Please try again or contact us directly.');history.pop();
     }
     waiting=false;
+  }
+
+  /* ── SMART INLINE LEAD CAPTURE ── */
+  function showInlineLeadPrompt(reason) {
+    // Translation strings for the lead prompt
+    const promptStrings = {
+      en: { title:'Want to', placeholder_name:'Your name', placeholder_email:'Your email', submit:'Send →', skip:'No thanks' },
+      es: { title:'¿Quieres', placeholder_name:'Tu nombre', placeholder_email:'Tu correo', submit:'Enviar →', skip:'No gracias' },
+      fr: { title:'Voulez-vous', placeholder_name:'Votre nom', placeholder_email:'Votre e-mail', submit:'Envoyer →', skip:'Non merci' },
+      de: { title:'Möchtest du', placeholder_name:'Dein Name', placeholder_email:'Deine E-Mail', submit:'Senden →', skip:'Nein danke' },
+      it: { title:'Vuoi', placeholder_name:'Il tuo nome', placeholder_email:'La tua email', submit:'Invia →', skip:'No grazie' },
+      pt: { title:'Quer', placeholder_name:'Seu nome', placeholder_email:'Seu e-mail', submit:'Enviar →', skip:'Não, obrigado' },
+      nl: { title:'Wil je dat we', placeholder_name:'Je naam', placeholder_email:'Je e-mail', submit:'Verstuur →', skip:'Nee, bedankt' },
+      da: { title:'Vil du have, at vi', placeholder_name:'Dit navn', placeholder_email:'Din e-mail', submit:'Send →', skip:'Nej tak' },
+      sv: { title:'Vill du att vi', placeholder_name:'Ditt namn', placeholder_email:'Din e-post', submit:'Skicka →', skip:'Nej tack' },
+      no: { title:'Vil du at vi', placeholder_name:'Ditt navn', placeholder_email:'Din e-post', submit:'Send →', skip:'Nei takk' },
+      fi: { title:'Haluatko, että', placeholder_name:'Nimesi', placeholder_email:'Sähköpostisi', submit:'Lähetä →', skip:'Ei kiitos' },
+      pl: { title:'Czy chcesz, abyśmy', placeholder_name:'Twoje imię', placeholder_email:'Twój e-mail', submit:'Wyślij →', skip:'Nie, dziękuję' },
+    };
+    const s = promptStrings[curLang] || promptStrings.en;
+
+    const row = document.createElement('div');
+    row.className = '_ox-row _ox-bot _ox-lead-inline';
+    row.innerHTML = `
+      <div class="_ox-mini-av">` + initLetter + `</div>
+      <div class="_ox-bubble" style="background:linear-gradient(155deg,rgba(91,142,232,0.15),rgba(91,142,232,0.05));border:1px solid rgba(91,142,232,0.25);padding:14px 16px;max-width:88%">
+        <div style="font-size:0.8rem;color:rgba(8,12,28,0.85);font-weight:600;margin-bottom:10px">` + s.title + ' ' + reason.replace(/[<>]/g, '') + `?</div>
+        <input type="text" class="_ox-inline-name" placeholder="` + s.placeholder_name + `" style="width:100%;padding:8px 10px;border-radius:8px;border:1px solid rgba(8,12,28,0.15);background:rgba(255,255,255,0.6);font-size:0.78rem;margin-bottom:6px;font-family:inherit;color:rgba(8,12,28,0.9);outline:none"/>
+        <input type="email" class="_ox-inline-email" placeholder="` + s.placeholder_email + `" style="width:100%;padding:8px 10px;border-radius:8px;border:1px solid rgba(8,12,28,0.15);background:rgba(255,255,255,0.6);font-size:0.78rem;margin-bottom:8px;font-family:inherit;color:rgba(8,12,28,0.9);outline:none"/>
+        <div style="display:flex;gap:6px">
+          <button class="_ox-inline-submit" style="flex:1;background:rgba(8,12,28,0.85);color:white;border:none;padding:8px 12px;border-radius:8px;font-size:0.78rem;font-weight:600;cursor:pointer;font-family:inherit">` + s.submit + `</button>
+          <button class="_ox-inline-skip" style="background:none;border:none;color:rgba(8,12,28,0.5);padding:8px 12px;font-size:0.74rem;cursor:pointer;font-family:inherit">` + s.skip + `</button>
+        </div>
+      </div>`;
+    msgs.appendChild(row);
+    msgs.scrollTop = msgs.scrollHeight;
+
+    const nameI = row.querySelector('._ox-inline-name');
+    const emailI = row.querySelector('._ox-inline-email');
+    const submitB = row.querySelector('._ox-inline-submit');
+    const skipB = row.querySelector('._ox-inline-skip');
+
+    function submitLead() {
+      const name = nameI.value.trim();
+      const email = emailI.value.trim();
+      const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+      if (!name || !emailOk) {
+        nameI.style.borderColor = name ? 'rgba(8,12,28,0.15)' : 'rgba(239,68,68,0.5)';
+        emailI.style.borderColor = emailOk ? 'rgba(8,12,28,0.15)' : 'rgba(239,68,68,0.5)';
+        return;
+      }
+      visitorName = name;
+      visitorEmail = email;
+      if (!IS_TEST) saveLead(name, email);
+      // Update conversation record with visitor info
+      if (conversationId && !IS_TEST) {
+        fetch(SUPABASE_URL + '/rest/v1/conversations?id=eq.' + conversationId, {
+          method: 'PATCH',
+          headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': 'Bearer ' + SUPABASE_ANON_KEY, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ visitor_name: name, visitor_email: email })
+        }).catch(() => {});
+      }
+      // Show confirmation, hide form
+      const bubble = row.querySelector('._ox-bubble');
+      const thanks = { en:'Got it! Someone will be in touch shortly. 🙌', es:'¡Listo! Pronto nos pondremos en contacto. 🙌', fr:'Parfait ! Nous vous recontactons bientôt. 🙌', de:'Super! Wir melden uns bald. 🙌', it:'Fatto! Ti contatteremo presto. 🙌', pt:'Pronto! Entraremos em contacto em breve. 🙌', nl:'Top! We nemen snel contact op. 🙌', da:'Modtaget! Vi vender tilbage hurtigt. 🙌', sv:'Tack! Vi hör av oss snart. 🙌', no:'Mottatt! Vi tar kontakt snart. 🙌', fi:'Kiitos! Otamme yhteyttä pian. 🙌', pl:'Zapisane! Wkrótce się odezwiemy. 🙌' };
+      bubble.innerHTML = '<div style="font-size:0.82rem;color:rgba(8,12,28,0.85);font-weight:500">' + (thanks[curLang] || thanks.en) + '</div>';
+    }
+    submitB.addEventListener('click', submitLead);
+    skipB.addEventListener('click', () => row.remove());
+    nameI.addEventListener('keydown', e => { if (e.key === 'Enter') emailI.focus(); });
+    emailI.addEventListener('keydown', e => { if (e.key === 'Enter') submitLead(); });
+    nameI.focus();
   }
 
   sendB.addEventListener('click',()=>sendMsg(input.value));
