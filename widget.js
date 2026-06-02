@@ -12,6 +12,8 @@
   const INDUSTRY = p.get('ind') ? decodeURIComponent(p.get('ind')) : 'other';
   const STYLE = p.get('style') || 'classic';
   const IS_TEST = p.get('test') === '1';
+  // Which languages this chatbot supports (from dashboard). Default: all.
+  const ENABLED_LANGS = p.get('langs') ? decodeURIComponent(p.get('langs')).split(',').map(s=>s.trim()).filter(Boolean) : null;
   const SC = {
     classic: { btn:'50%',    panel:'20px', header:'20px 20px 0 0', avatar:'50%' },
     modern:  { btn:'14px',   panel:'12px', header:'12px 12px 0 0', avatar:'8px' },
@@ -31,7 +33,7 @@
     da: { cc: 'dk', name: 'Dansk',      aiName: 'Danish' },
     sv: { cc: 'se', name: 'Svenska',    aiName: 'Swedish' },
     no: { cc: 'no', name: 'Norsk',      aiName: 'Norwegian' },
-    fi: { cc: 'fi', name: 'Suomi',      aiName: 'Finnish' },
+    ru: { cc: 'ru', name: 'Русский',    aiName: 'Russian' },
     pl: { cc: 'pl', name: 'Polski',     aiName: 'Polish' },
   };
   function widgetFlag(cc) {
@@ -49,16 +51,28 @@
     da: { online:'Online', placeholder:'Stil et spørgsmål...', send:'Send', tagline:'Øjeblikkelige svar', leadName:'Dit navn', leadEmail:'Din e-mailadresse', leadStart:'Start chat →', leadSkip:'Spring over', leadErr:'Indtast venligst et gyldigt navn og e-mail.', consent:'Ved at chatte accepterer du, at dine beskeder behandles for at besvare dine spørgsmål.', privacy:'privatlivspolitik' },
     sv: { online:'Online', placeholder:'Ställ en fråga...', send:'Skicka', tagline:'Omedelbara svar', leadName:'Ditt namn', leadEmail:'Din e-postadress', leadStart:'Starta chatt →', leadSkip:'Hoppa över', leadErr:'Ange ett giltigt namn och e-postadress.', consent:'Genom att chatta godkänner du att dina meddelanden behandlas för att besvara dina frågor.', privacy:'integritetspolicy' },
     no: { online:'Online', placeholder:'Still et spørsmål...', send:'Send', tagline:'Umiddelbare svar', leadName:'Ditt navn', leadEmail:'Din e-postadresse', leadStart:'Start chat →', leadSkip:'Hopp over', leadErr:'Vennligst skriv inn gyldig navn og e-post.', consent:'Ved å chatte godtar du at meldingene dine behandles for å svare på spørsmål.', privacy:'personvernerklæring' },
-    fi: { online:'Verkossa', placeholder:'Esitä kysymys...', send:'Lähetä', tagline:'Välittömät vastaukset', leadName:'Nimesi', leadEmail:'Sähköpostiosoitteesi', leadStart:'Aloita chat →', leadSkip:'Ohita', leadErr:'Anna kelvollinen nimi ja sähköposti.', consent:'Keskustelemalla hyväksyt, että viestisi käsitellään kysymyksiisi vastaamiseksi.', privacy:'tietosuojailmoitus' },
+    ru: { online:'В сети', placeholder:'Задайте вопрос...', send:'Отправить', tagline:'Мгновенные ответы', leadName:'Ваше имя', leadEmail:'Ваш адрес эл. почты', leadStart:'Начать чат →', leadSkip:'Пропустить', leadErr:'Введите корректное имя и адрес эл. почты.', consent:'Общаясь в чате, вы соглашаетесь на обработку ваших сообщений для ответа на вопросы.', privacy:'политика конфиденциальности' },
     pl: { online:'Online', placeholder:'Zadaj pytanie...', send:'Wyślij', tagline:'Natychmiastowe odpowiedzi', leadName:'Twoje imię', leadEmail:'Twój adres e-mail', leadStart:'Rozpocznij czat →', leadSkip:'Pomiń', leadErr:'Wprowadź prawidłowe imię i e-mail.', consent:'Czatując, zgadzasz się, aby Twoje wiadomości były przetwarzane w celu odpowiedzi na pytania.', privacy:'polityka prywatności' },
   };
 
-  // Detect language: localStorage > browser > English
+  // Build the set of languages this widget offers
+  function enabledLangEntries() {
+    if (!ENABLED_LANGS || ENABLED_LANGS.length === 0) return Object.entries(LANGS);
+    const set = new Set(['en', ...ENABLED_LANGS]); // English always available
+    return Object.entries(LANGS).filter(([code]) => set.has(code));
+  }
+  function isLangEnabled(code) {
+    if (code === 'en') return true;
+    if (!ENABLED_LANGS || ENABLED_LANGS.length === 0) return true;
+    return ENABLED_LANGS.includes(code);
+  }
+
+  // Detect language: localStorage > browser > English (only among enabled)
   function detectLang() {
     const saved = localStorage.getItem('pluxbot_lang');
-    if (saved && LANGS[saved]) return saved;
+    if (saved && LANGS[saved] && isLangEnabled(saved)) return saved;
     const browser = (navigator.language || 'en').slice(0, 2);
-    return LANGS[browser] ? browser : 'en';
+    return (LANGS[browser] && isLangEnabled(browser)) ? browser : 'en';
   }
 
   let curLang = detectLang();
@@ -92,7 +106,7 @@
     da: { hours:'Hvad er jeres åbningstider?', services:'Hvilke ydelser tilbyder I?', cost:'Hvor meget koster det?', location:'Hvor ligger I?', book:'Hvordan bestiller jeg en tid?', delivery:'Tilbyder I levering?', returns:'Hvad er jeres returpolitik?' },
     sv: { hours:'Vilka är era öppettider?', services:'Vilka tjänster erbjuder ni?', cost:'Vad kostar det?', location:'Var är ni belägna?', book:'Hur bokar jag en tid?', delivery:'Erbjuder ni leverans?', returns:'Vad är er returpolicy?' },
     no: { hours:'Hva er åpningstidene?', services:'Hvilke tjenester tilbyr dere?', cost:'Hvor mye koster det?', location:'Hvor er dere lokalisert?', book:'Hvordan bestiller jeg time?', delivery:'Tilbyr dere levering?', returns:'Hva er deres returregler?' },
-    fi: { hours:'Mitkä ovat aukioloaikanne?', services:'Mitä palveluja tarjoatte?', cost:'Paljonko se maksaa?', location:'Missä sijaitsette?', book:'Miten varaan ajan?', delivery:'Tarjoatteko toimituksen?', returns:'Mikä on palautuskäytäntönne?' },
+    ru: { hours:'Какие у вас часы работы?', services:'Какие услуги вы предлагаете?', cost:'Сколько это стоит?', location:'Где вы находитесь?', book:'Как записаться на приём?', delivery:'Вы осуществляете доставку?', returns:'Какова ваша политика возврата?' },
     pl: { hours:'Jakie są godziny otwarcia?', services:'Jakie usługi oferujecie?', cost:'Ile to kosztuje?', location:'Gdzie się znajdujecie?', book:'Jak umówić wizytę?', delivery:'Czy oferujecie dostawę?', returns:'Jaka jest polityka zwrotów?' },
   };
 
@@ -198,8 +212,8 @@
   function buildLangMenu() {
     const grid = document.getElementById('_ox-lang-grid');
     if (!grid) return;
-    grid.innerHTML = Object.entries(LANGS).map(([code, l]) => 
-      `<button data-lang="${code}" title="${l.name}" style="background:${code===curLang?'rgba(91,142,232,0.25)':'transparent'};border:none;cursor:pointer;padding:8px;border-radius:8px;display:flex;align-items:center;justify-content:center;transition:background 0.15s">${widgetFlag(l.cc)}</button>`
+    grid.innerHTML = enabledLangEntries().map(([code, l]) => 
+      `<button data-lang="${code}" title="${l.name}" style="background:${code===curLang?'rgba(91,142,232,0.25)':'transparent'};border:none;cursor:pointer;padding:8px;border-radius:8px;display:flex;align-items:center;justify-content:center;transition:transform 0.18s cubic-bezier(0.34,1.56,0.64,1),background 0.15s">${widgetFlag(l.cc)}</button>`
     ).join('');
     grid.querySelectorAll('button').forEach(b => {
       b.addEventListener('click', () => {
@@ -255,6 +269,10 @@
   setTimeout(() => {
     const langBtn = document.getElementById('_ox-lang');
     const langMenu = document.getElementById('_ox-lang-menu');
+    // If only English is enabled, hide the language picker entirely
+    if (langBtn && enabledLangEntries().length <= 1) {
+      langBtn.style.display = 'none';
+    }
     if (langBtn && langMenu) {
       langBtn.addEventListener('click', (e) => {
         e.stopPropagation();
@@ -498,7 +516,7 @@
       da: { title:'Vil du have, at vi', placeholder_name:'Dit navn', placeholder_email:'Din e-mail', submit:'Send →', skip:'Nej tak' },
       sv: { title:'Vill du att vi', placeholder_name:'Ditt namn', placeholder_email:'Din e-post', submit:'Skicka →', skip:'Nej tack' },
       no: { title:'Vil du at vi', placeholder_name:'Ditt navn', placeholder_email:'Din e-post', submit:'Send →', skip:'Nei takk' },
-      fi: { title:'Haluatko, että', placeholder_name:'Nimesi', placeholder_email:'Sähköpostisi', submit:'Lähetä →', skip:'Ei kiitos' },
+      ru: { title:'Хотите, чтобы мы', placeholder_name:'Ваше имя', placeholder_email:'Ваш эл. адрес', submit:'Отправить →', skip:'Нет, спасибо' },
       pl: { title:'Czy chcesz, abyśmy', placeholder_name:'Twoje imię', placeholder_email:'Twój e-mail', submit:'Wyślij →', skip:'Nie, dziękuję' },
     };
     const s = promptStrings[curLang] || promptStrings.en;
@@ -546,7 +564,7 @@
       }
       // Show confirmation, hide form
       const bubble = row.querySelector('._ox-bubble');
-      const thanks = { en:'Got it! Someone will be in touch shortly. 🙌', es:'¡Listo! Pronto nos pondremos en contacto. 🙌', fr:'Parfait ! Nous vous recontactons bientôt. 🙌', de:'Super! Wir melden uns bald. 🙌', it:'Fatto! Ti contatteremo presto. 🙌', pt:'Pronto! Entraremos em contacto em breve. 🙌', nl:'Top! We nemen snel contact op. 🙌', da:'Modtaget! Vi vender tilbage hurtigt. 🙌', sv:'Tack! Vi hör av oss snart. 🙌', no:'Mottatt! Vi tar kontakt snart. 🙌', fi:'Kiitos! Otamme yhteyttä pian. 🙌', pl:'Zapisane! Wkrótce się odezwiemy. 🙌' };
+      const thanks = { en:'Got it! Someone will be in touch shortly. 🙌', es:'¡Listo! Pronto nos pondremos en contacto. 🙌', fr:'Parfait ! Nous vous recontactons bientôt. 🙌', de:'Super! Wir melden uns bald. 🙌', it:'Fatto! Ti contatteremo presto. 🙌', pt:'Pronto! Entraremos em contacto em breve. 🙌', nl:'Top! We nemen snel contact op. 🙌', da:'Modtaget! Vi vender tilbage hurtigt. 🙌', sv:'Tack! Vi hör av oss snart. 🙌', no:'Mottatt! Vi tar kontakt snart. 🙌', ru:'Получено! Мы скоро свяжемся с вами. 🙌', pl:'Zapisane! Wkrótce się odezwiemy. 🙌' };
       bubble.innerHTML = '<div style="font-size:0.82rem;color:rgba(8,12,28,0.85);font-weight:500">' + (thanks[curLang] || thanks.en) + '</div>';
     }
     submitB.addEventListener('click', submitLead);
