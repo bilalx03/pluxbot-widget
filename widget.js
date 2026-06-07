@@ -12,6 +12,7 @@
   const INDUSTRY = p.get('ind') ? decodeURIComponent(p.get('ind')) : 'other';
   const STYLE = p.get('style') || 'classic';
   const IS_TEST = p.get('test') === '1';
+  if (IS_TEST) console.log('[Pluxbot] Test mode — conversations and leads will NOT be saved.');
   // Which languages this chatbot supports (from dashboard). Default: all.
   const ENABLED_LANGS = p.get('langs') ? decodeURIComponent(p.get('langs')).split(',').map(s=>s.trim()).filter(Boolean) : null;
   const SC = {
@@ -357,14 +358,20 @@
 
   /* ── CONVERSATION TRANSCRIPT ── */
   async function createConversation(name,email){
+    const now = new Date().toISOString();
     try{
       const res=await fetch(`${SUPABASE_URL}/rest/v1/conversations`,{
         method:'POST',
         headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':`Bearer ${SUPABASE_ANON_KEY}`,'Content-Type':'application/json','Prefer':'return=representation'},
-        body:JSON.stringify({client_id:CLIENT_ID,visitor_name:name||null,visitor_email:email||null,messages:[]})
+        body:JSON.stringify({client_id:CLIENT_ID,visitor_name:name||null,visitor_email:email||null,messages:[],started_at:now,last_message_at:now})
       });
+      if(!res.ok){
+        const t = await res.text().catch(()=>'');
+        console.warn('[Pluxbot] createConversation failed:', res.status, t);
+        return;
+      }
       const data=await res.json();
-      if(data&&data[0])conversationId=data[0].id;
+      if(data&&data[0]){conversationId=data[0].id;console.log('[Pluxbot] Tracking conversation:', conversationId);}
     }catch(e){console.warn('[Pluxbot] Could not create conversation:',e)}
   }
 
