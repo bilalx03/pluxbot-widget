@@ -173,15 +173,15 @@
   #_ox-brand{font-size:8.5px;font-weight:700;letter-spacing:.11em;text-transform:uppercase;color:rgba(8,12,28,0.25);text-align:right;line-height:1.4;flex-shrink:0}
   #_ox-close{width:28px;height:28px;border-radius:50%;flex-shrink:0;background:rgba(0,0,0,0.055);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:13px;color:rgba(8,12,28,0.45);transition:background .18s}
   #_ox-close:hover{background:rgba(0,0,0,0.1);color:rgba(8,12,28,0.85)}
-  #_ox-lead{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:28px 24px;gap:12px}
-  #_ox-lead-icon{width:52px;height:52px;border-radius:50%;background:linear-gradient(155deg,rgba(80,130,220,0.15),rgba(30,60,160,0.2));border:1.5px solid rgba(80,130,220,0.25);display:flex;align-items:center;justify-content:center;font-size:22px}
+  #_ox-lead{flex:1;min-height:0;overflow-y:auto;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:16px 22px;gap:8px}
+  #_ox-lead-icon{width:40px;height:40px;border-radius:50%;background:linear-gradient(155deg,rgba(80,130,220,0.15),rgba(30,60,160,0.2));border:1.5px solid rgba(80,130,220,0.25);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
   #_ox-lead h3{font-size:15px;font-weight:700;color:rgba(8,12,28,0.88);text-align:center;line-height:1.3}
-  #_ox-lead p{font-size:12.5px;color:rgba(8,12,28,0.45);text-align:center;line-height:1.6}
-  ._ox-lead-input{width:100%;padding:10px 14px;background:rgba(255,255,255,0.85);border:1px solid rgba(0,0,0,0.1);border-radius:14px;font-size:13.5px;color:rgba(8,12,28,0.85);font-family:inherit;outline:none;transition:border-color .2s}
+  #_ox-lead p{font-size:12px;color:rgba(8,12,28,0.45);text-align:center;line-height:1.4}
+  ._ox-lead-input{width:100%;padding:9px 13px;background:rgba(255,255,255,0.85);border:1px solid rgba(0,0,0,0.1);border-radius:14px;font-size:13.5px;color:rgba(8,12,28,0.85);font-family:inherit;outline:none;transition:border-color .2s}
   ._ox-lead-input::placeholder{color:rgba(8,12,28,0.32)}
   ._ox-lead-input:focus{border-color:rgba(80,130,220,0.45);box-shadow:0 0 0 3px rgba(80,130,220,0.1)}
   #_ox-lead-err{font-size:11.5px;color:rgba(200,50,50,0.8);text-align:center;display:none}
-  #_ox-lead-btn{width:100%;padding:11px;border-radius:14px;background:rgba(8,12,28,0.88);border:none;cursor:pointer;font-size:13.5px;font-weight:600;color:rgba(255,255,255,0.92);font-family:inherit;transition:transform .2s,background .2s}
+  #_ox-lead-btn{width:100%;padding:10px;border-radius:14px;background:rgba(8,12,28,0.88);border:none;cursor:pointer;font-size:13.5px;font-weight:600;color:rgba(255,255,255,0.92);font-family:inherit;transition:transform .2s,background .2s}
   #_ox-lead-btn:hover{background:rgba(8,12,28,1);transform:translateY(-1px)}
   #_ox-lead-skip{font-size:11px;color:rgba(8,12,28,0.3);cursor:pointer;background:none;border:none;font-family:inherit}
   #_ox-lead-skip:hover{color:rgba(8,12,28,0.55)}
@@ -388,7 +388,7 @@
         <div id="_ox-lead-err">${t('leadErr')}</div>
         <button id="_ox-lead-btn">${t('leadStart')}</button>
         <button id="_ox-lead-skip">${t('leadSkip')}</button>
-        <div id="_ox-consent" style="font-size:10px;color:rgba(8,12,28,0.4);text-align:center;line-height:1.5;margin-top:8px;max-width:280px">${t('consent')} <a href="https://pluxbot.com/privacy" target="_blank" style="color:rgba(80,130,220,0.7);text-decoration:underline">${t('privacy')}</a>.</div>
+        <div id="_ox-consent" style="font-size:10px;color:rgba(8,12,28,0.4);text-align:center;line-height:1.5;margin-top:3px;max-width:280px">${t('consent')} <a href="https://pluxbot.com/privacy" target="_blank" style="color:rgba(80,130,220,0.7);text-decoration:underline">${t('privacy')}</a>.</div>
       </div>
       <div id="_ox-msgs" style="display:none"></div>
       <div id="_ox-chips" style="display:none"></div>
