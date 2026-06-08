@@ -209,6 +209,44 @@
   ].join('');
   document.head.appendChild(dynSt);
 
+  /* ── PREMIUM 2-TAB REDESIGN STYLES ── */
+  const premiumSt = document.createElement('style');
+  premiumSt.textContent = `
+    #_ox-panel{height:600px!important}
+    /* Gradient premium header */
+    #_ox-hd{background:linear-gradient(135deg,#5b8ee8 0%,#6ea8ff 50%,#34e1e8 110%)!important;border-bottom:none!important;padding:15px 16px!important;color:#fff}
+    #_ox-av{background:rgba(255,255,255,0.22)!important;color:#fff!important;font-weight:700}
+    #_ox-av span{color:#fff!important}
+    #_ox-biz{color:#fff!important}
+    #_ox-status{color:rgba(255,255,255,0.9)!important}
+    #_ox-status-dot{background:#7CFFB2!important;box-shadow:0 0 6px #7CFFB2}
+    #_ox-brand{color:rgba(255,255,255,0.72)!important}
+    #_ox-close{color:#fff!important;opacity:0.9}
+    #_ox-close:hover{opacity:1}
+    /* HOME view */
+    #_ox-home{flex:1;overflow-y:auto;background:#fbfcff;display:flex;flex-direction:column}
+    #_ox-home-hero{padding:22px 20px 26px;background:linear-gradient(135deg,#5b8ee8 0%,#6ea8ff 50%,#34e1e8 115%);color:#fff;position:relative}
+    #_ox-home-hero h2{margin:0;font-size:1.55rem;font-weight:750;line-height:1.25;letter-spacing:-0.01em}
+    #_ox-home-hero p{margin:6px 0 0;font-size:0.98rem;opacity:0.92;font-weight:400}
+    #_ox-home-cards{padding:16px 16px 18px;display:flex;flex-direction:column;gap:11px;margin-top:-14px}
+    .ox-card{background:#fff;border:1px solid rgba(0,0,0,0.06);border-radius:16px;padding:15px 16px;box-shadow:0 6px 20px rgba(40,70,140,0.08);cursor:pointer;transition:transform .22s cubic-bezier(.16,1,.3,1),box-shadow .22s;display:flex;align-items:center;justify-content:space-between;gap:12px}
+    .ox-card:hover{transform:translateY(-2px);box-shadow:0 12px 30px rgba(40,70,140,0.14)}
+    .ox-card-l{display:flex;flex-direction:column}
+    .ox-card-title{font-weight:650;font-size:0.95rem;color:#16203a}
+    .ox-card-sub{font-size:0.8rem;color:#7a8499;margin-top:2px}
+    .ox-card-arrow{color:#5b8ee8;font-size:1.3rem;flex-shrink:0;line-height:1}
+    .ox-qhead{font-size:0.7rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#9aa3b5;margin:6px 2px 2px}
+    .ox-qcard{background:#fff;border:1px solid rgba(91,142,232,0.16);border-radius:13px;padding:12px 14px;cursor:pointer;font-size:0.86rem;color:#3a4a6b;font-weight:500;transition:background .15s,transform .15s,border-color .15s;display:flex;align-items:center;justify-content:space-between;gap:10px}
+    .ox-qcard:hover{background:#f3f7ff;border-color:rgba(91,142,232,0.4);transform:translateX(2px)}
+    .ox-qcard span.a{color:#9bb4e6;font-size:1rem}
+    /* Bottom tab bar */
+    #_ox-tabs{display:flex;flex-shrink:0;border-top:1px solid rgba(0,0,0,0.06);background:#fff}
+    .ox-tab{flex:1;padding:9px 0 7px;background:none;border:none;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px;color:#9aa3b5;font-size:0.66rem;font-weight:650;transition:color .15s;font-family:inherit}
+    .ox-tab.active{color:#5b8ee8}
+    .ox-tab svg{width:21px;height:21px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+  `;
+  document.head.appendChild(premiumSt);
+
   // Language picker: build the grid and handle clicks
   function buildLangMenu() {
     const grid = document.getElementById('_ox-lang-grid');
@@ -226,6 +264,8 @@
         document.getElementById('_ox-lang-menu').style.display = 'none';
         // Re-render UI strings
         applyTranslations();
+        if(typeof applyHomeText==='function')applyHomeText();
+        if(typeof buildHomeQs==='function')buildHomeQs();
         buildLangMenu();
         // Re-render chips in new language
         const chipsEl = document.getElementById('_ox-chips');
@@ -305,7 +345,24 @@
         <div id="_ox-brand">Powered by<br/>Pluxbot</div>
         <button id="_ox-lang" aria-label="Change language" style="background:none;border:none;cursor:pointer;font-size:18px;padding:4px 6px;margin-right:2px;line-height:1;opacity:0.85">${widgetFlag(LANGS[curLang].cc)}</button><button id="_ox-close">✕</button>
       </div>
-      <div id="_ox-lead">
+      <div id="_ox-home">
+        <div id="_ox-home-hero">
+          <h2 id="_ox-home-greet">Hi there 👋</h2>
+          <p id="_ox-home-sub">How can we help?</p>
+        </div>
+        <div id="_ox-home-cards">
+          <div class="ox-card" id="_ox-ask">
+            <div class="ox-card-l">
+              <div class="ox-card-title" id="_ox-ask-title">Ask a question</div>
+              <div class="ox-card-sub" id="_ox-ask-sub">${BOT_NAME} replies instantly</div>
+            </div>
+            <div class="ox-card-arrow">→</div>
+          </div>
+          <div class="ox-qhead" id="_ox-qhead">Popular questions</div>
+          <div id="_ox-home-qs"></div>
+        </div>
+      </div>
+      <div id="_ox-lead" style="display:none">
         <div id="_ox-lead-icon">👋</div>
         <h3>Before we chat…</h3>
         <p>Drop your name and email so ${BIZ_RAW} can follow up with you if needed.</p>
@@ -321,6 +378,10 @@
       <div id="_ox-foot" style="display:none">
         <input id="_ox-in" type="text" placeholder="${t('placeholder')}" autocomplete="off"/>
         <button id="_ox-send"><svg viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg></button>
+      </div>
+      <div id="_ox-tabs">
+        <button class="ox-tab active" id="_ox-tab-home" type="button"><svg viewBox="0 0 24 24"><path d="M3 11.5l9-7.5 9 7.5"/><path d="M5 10.5V20h14v-9.5"/></svg>Home</button>
+        <button class="ox-tab" id="_ox-tab-chat" type="button"><svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Messages</button>
       </div>
       <div id="_ox-tag">Pluxbot · ${t('tagline')}</div>
       <div id="_ox-lang-menu" style="display:none;position:absolute;top:54px;right:12px;background:rgba(20,24,38,0.98);backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:8px;box-shadow:0 12px 32px rgba(0,0,0,0.4);z-index:10;max-width:200px">
@@ -351,7 +412,90 @@
   let conversationId=null,visitorName='',visitorEmail='';
 
   /* ── OPEN / CLOSE ── */
-  function openPanel(){open=true;panel.classList.add('_ox-open');document.getElementById('_ox-icon').textContent='✕';if(!leadDone){leadName.focus();}else{input.focus();if(!greeted){greet();greeted=true;}}}
+  /* ── PREMIUM 2-TAB SHELL: home view + tab nav ── */
+  const homeView = document.getElementById('_ox-home');
+  const tabHome  = document.getElementById('_ox-tab-home');
+  const tabChat  = document.getElementById('_ox-tab-chat');
+  const askCard  = document.getElementById('_ox-ask');
+  const homeQs   = document.getElementById('_ox-home-qs');
+  let pendingQuestion = null;
+
+  const HOME_GREET = {
+    en:['Hi there 👋','How can we help?'], es:['Hola 👋','¿Cómo podemos ayudarte?'],
+    fr:['Bonjour 👋','Comment pouvons-nous aider ?'], de:['Hallo 👋','Wie können wir helfen?'],
+    it:['Ciao 👋','Come possiamo aiutarti?'], pt:['Olá 👋','Como podemos ajudar?'],
+    nl:['Hallo 👋','Hoe kunnen we helpen?'], da:['Hej 👋','Hvordan kan vi hjælpe?'],
+    sv:['Hej 👋','Hur kan vi hjälpa?'], no:['Hei 👋','Hvordan kan vi hjelpe?'],
+    ru:['Привет 👋','Чем мы можем помочь?'], pl:['Cześć 👋','Jak możemy pomóc?']
+  };
+  const HOME_T = {
+    en:{ask:'Ask a question',instant:'replies instantly',popular:'Popular questions'},
+    es:{ask:'Haz una pregunta',instant:'responde al instante',popular:'Preguntas populares'},
+    fr:{ask:'Poser une question',instant:'répond instantanément',popular:'Questions fréquentes'},
+    de:{ask:'Stell eine Frage',instant:'antwortet sofort',popular:'Häufige Fragen'},
+    it:{ask:'Fai una domanda',instant:'risponde subito',popular:'Domande frequenti'},
+    pt:{ask:'Faça uma pergunta',instant:'responde na hora',popular:'Perguntas populares'},
+    nl:{ask:'Stel een vraag',instant:'antwoordt direct',popular:'Veelgestelde vragen'},
+    da:{ask:'Stil et spørgsmål',instant:'svarer med det samme',popular:'Populære spørgsmål'},
+    sv:{ask:'Ställ en fråga',instant:'svarar direkt',popular:'Vanliga frågor'},
+    no:{ask:'Still et spørsmål',instant:'svarer med en gang',popular:'Vanlige spørsmål'},
+    ru:{ask:'Задать вопрос',instant:'отвечает мгновенно',popular:'Популярные вопросы'},
+    pl:{ask:'Zadaj pytanie',instant:'odpowiada natychmiast',popular:'Popularne pytania'}
+  };
+  function applyHomeText(){
+    const g=HOME_GREET[curLang]||HOME_GREET.en;
+    const ht=HOME_T[curLang]||HOME_T.en;
+    const set=(id,txt)=>{const el=document.getElementById(id);if(el)el.textContent=txt;};
+    set('_ox-home-greet',g[0]); set('_ox-home-sub',g[1]);
+    set('_ox-ask-title',ht.ask); set('_ox-ask-sub',BOT_NAME+' '+ht.instant);
+    set('_ox-qhead',ht.popular);
+  }
+  function buildHomeQs(){
+    if(!homeQs)return;
+    homeQs.innerHTML='';
+    getChips().slice(0,4).forEach(q=>{
+      const d=document.createElement('div');
+      d.className='ox-qcard';
+      const s=document.createElement('span'); s.textContent=q;
+      const a=document.createElement('span'); a.className='a'; a.textContent='→';
+      d.appendChild(s); d.appendChild(a);
+      d.addEventListener('click',()=>askQuick(q));
+      homeQs.appendChild(d);
+    });
+  }
+  function setTab(which){
+    if(tabHome)tabHome.classList.toggle('active',which==='home');
+    if(tabChat)tabChat.classList.toggle('active',which==='chat');
+  }
+  function goHome(){
+    if(homeView)homeView.style.display='flex';
+    leadDiv.style.display='none';msgs.style.display='none';chips.style.display='none';foot.style.display='none';
+    setTab('home');
+  }
+  function goChat(){
+    if(homeView)homeView.style.display='none';
+    setTab('chat');
+    if(leadDone){
+      msgs.style.display='flex';chips.style.display='flex';foot.style.display='flex';
+      if(!greeted){greet();greeted=true;}
+      input.focus();
+    } else {
+      leadDiv.style.display='flex';
+      if(leadName)leadName.focus();
+    }
+  }
+  function askQuick(q){
+    pendingQuestion=q;
+    goChat();
+    if(leadDone){const qq=pendingQuestion;pendingQuestion=null;setTimeout(()=>sendMsg(qq),300);}
+  }
+  applyHomeText();
+  buildHomeQs();
+  if(askCard)askCard.addEventListener('click',()=>goChat());
+  if(tabHome)tabHome.addEventListener('click',goHome);
+  if(tabChat)tabChat.addEventListener('click',goChat);
+
+  function openPanel(){open=true;panel.classList.add('_ox-open');document.getElementById('_ox-icon').textContent='✕';if(greeted){goChat();}else{goHome();}}
   function closePanel(){open=false;panel.classList.remove('_ox-open');document.getElementById('_ox-icon').textContent='💬';}
   btn.addEventListener('click',()=>open?closePanel():openPanel());
   closeB.addEventListener('click',closePanel);
@@ -388,11 +532,14 @@
 
   /* ── LEAD CAPTURE ── */
   function startChat(){
+    if(homeView)homeView.style.display='none';
     leadDiv.style.display='none';msgs.style.display='flex';chips.style.display='flex';foot.style.display='flex';
+    setTab('chat');
     leadDone=true;
     if(!IS_TEST) createConversation(visitorName,visitorEmail);
     if(!greeted){greet();greeted=true;}
-    input.focus();
+    if(pendingQuestion){const qq=pendingQuestion;pendingQuestion=null;setTimeout(()=>sendMsg(qq),400);}
+    else input.focus();
   }
 
   function saveLead(name,email){
