@@ -15,6 +15,14 @@
   if (IS_TEST) console.log('[Pluxbot] Test mode — conversations and leads will NOT be saved.');
   // Custom popular questions from dashboard (pipe-separated). Overrides industry defaults if present.
   const CUSTOM_QS = p.get('qs') ? decodeURIComponent(p.get('qs')).split('|').map(s=>s.trim()).filter(Boolean).slice(0,6) : null;
+  // Widget size preset: small / medium (default) / large
+  const SIZE = (p.get('size') || 'medium').toLowerCase();
+  const SIZE_PRESETS = {
+    small:  { w: 320, h: 480 },
+    medium: { w: 370, h: 540 },
+    large:  { w: 420, h: 620 },
+  };
+  const SZ = SIZE_PRESETS[SIZE] || SIZE_PRESETS.medium;
   // Which languages this chatbot supports (from dashboard). Default: all.
   const ENABLED_LANGS = p.get('langs') ? decodeURIComponent(p.get('langs')).split(',').map(s=>s.trim()).filter(Boolean) : null;
   const SC = {
@@ -147,7 +155,7 @@
   #_ox-icon{font-size:24px;position:relative;z-index:1}
   #_ox-dot{position:absolute;bottom:4px;right:4px;width:13px;height:13px;border-radius:50%;background:#22c55e;border:2.5px solid rgba(255,255,255,0.9);box-shadow:0 0 8px rgba(34,197,94,0.7);animation:_ox-pulse 2.2s ease infinite}
   @keyframes _ox-pulse{0%,100%{box-shadow:0 0 8px rgba(34,197,94,0.7)}50%{box-shadow:0 0 16px rgba(34,197,94,0.9)}}
-  #_ox-panel{position:absolute;bottom:76px;right:0;width:370px;height:540px;display:flex;flex-direction:column;border-radius:26px;overflow:hidden;background:rgba(248,250,255,0.78);backdrop-filter:blur(48px) saturate(2.2);-webkit-backdrop-filter:blur(48px) saturate(2.2);border:1px solid rgba(255,255,255,0.75);border-top-color:rgba(255,255,255,0.95);box-shadow:0 1px 0 rgba(255,255,255,0.9) inset,0 0 0 0.5px rgba(0,0,0,0.06),0 40px 100px rgba(0,0,0,0.2),0 10px 28px rgba(0,0,0,0.1);transform-origin:bottom right;transition:opacity .32s cubic-bezier(.16,1,.3,1),transform .32s cubic-bezier(.16,1,.3,1);opacity:0;transform:scale(.88) translateY(14px);pointer-events:none}
+  #_ox-panel{position:absolute;bottom:76px;right:0;width:${SZ.w}px;height:${SZ.h}px;display:flex;flex-direction:column;border-radius:26px;overflow:hidden;background:rgba(248,250,255,0.78);backdrop-filter:blur(48px) saturate(2.2);-webkit-backdrop-filter:blur(48px) saturate(2.2);border:1px solid rgba(255,255,255,0.75);border-top-color:rgba(255,255,255,0.95);box-shadow:0 1px 0 rgba(255,255,255,0.9) inset,0 0 0 0.5px rgba(0,0,0,0.06),0 40px 100px rgba(0,0,0,0.2),0 10px 28px rgba(0,0,0,0.1);transform-origin:bottom right;transition:opacity .32s cubic-bezier(.16,1,.3,1),transform .32s cubic-bezier(.16,1,.3,1);opacity:0;transform:scale(.88) translateY(14px);pointer-events:none}
   #_ox-panel._ox-open{opacity:1;transform:scale(1) translateY(0);pointer-events:all}
   #_ox-hd{padding:14px 16px;background:rgba(255,255,255,0.55);border-bottom:1px solid rgba(0,0,0,0.055);display:flex;align-items:center;gap:11px;flex-shrink:0}
   #_ox-av{width:40px;height:40px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:800;color:rgba(255,255,255,0.95);position:relative;background:linear-gradient(155deg,rgba(80,130,220,0.85),rgba(30,60,160,0.9));border:1.5px solid rgba(255,255,255,0.55)}
@@ -309,28 +317,7 @@
     if (consent) consent.innerHTML = t('consent') + ' <a href="https://pluxbot.com/privacy" target="_blank" style="color:rgba(80,130,220,0.7);text-decoration:underline">' + t('privacy') + '</a>.';
   }
 
-  // Open/close dropdown
-  setTimeout(() => {
-    const langBtn = document.getElementById('_ox-lang');
-    const langMenu = document.getElementById('_ox-lang-menu');
-    // If only English is enabled, hide the language picker entirely
-    if (langBtn && enabledLangEntries().length <= 1) {
-      langBtn.style.display = 'none';
-    }
-    if (langBtn && langMenu) {
-      langBtn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        langMenu.style.display = langMenu.style.display === 'none' ? 'block' : 'none';
-        if (langMenu.style.display === 'block') buildLangMenu();
-      });
-      document.addEventListener('click', (e) => {
-        if (!langMenu.contains(e.target) && e.target !== langBtn) {
-          langMenu.style.display = 'none';
-        }
-      });
-    }
-    buildLangMenu();
-  }, 200);
+  // Language menu wiring happens after appendChild (see below) — no setTimeout race.
 
   /* ── BUILD HTML ── */
   const wrap = document.createElement('div');
@@ -387,13 +374,40 @@
         <button class="ox-tab" id="_ox-tab-chat" type="button"><svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Messages</button>
       </div>
       <div id="_ox-tag">Pluxbot · ${t('tagline')}</div>
-      <div id="_ox-lang-menu" style="display:none;position:absolute;top:54px;right:12px;background:rgba(20,24,38,0.98);backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:8px;box-shadow:0 12px 32px rgba(0,0,0,0.4);z-index:10;max-width:200px">
+      <div id="_ox-lang-menu" style="display:none;position:absolute;top:54px;right:12px;background:rgba(20,24,38,0.98);backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:8px;box-shadow:0 12px 32px rgba(0,0,0,0.4);z-index:2147483647;max-width:200px">
         <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:4px" id="_ox-lang-grid"></div>
       </div>
     </div>
     <div id="_ox-btn"><span id="_ox-icon">💬</span><div id="_ox-dot"></div></div>
   `;
   document.body.appendChild(wrap);
+
+  /* ── LANGUAGE PICKER WIRING (synchronous, attached immediately after DOM insert) ── */
+  (function wireLangPicker(){
+    const langBtn = document.getElementById('_ox-lang');
+    const langMenu = document.getElementById('_ox-lang-menu');
+    // If only English is enabled, hide the language picker entirely
+    if (langBtn && enabledLangEntries().length <= 1) {
+      langBtn.style.display = 'none';
+      return;
+    }
+    if (!langBtn || !langMenu) return;
+    langBtn.addEventListener('click', function(e){
+      e.stopPropagation();
+      e.preventDefault();
+      const showing = langMenu.style.display !== 'none' && langMenu.style.display !== '';
+      langMenu.style.display = showing ? 'none' : 'block';
+      if (!showing) buildLangMenu();
+    });
+    // Outside-click closes the menu. Use closest() so clicks on the flag <img>
+    // inside the button (the actual e.target) are correctly treated as button clicks.
+    document.addEventListener('click', function(e){
+      if (!langMenu.contains(e.target) && !(e.target.closest && e.target.closest('#_ox-lang'))) {
+        langMenu.style.display = 'none';
+      }
+    });
+    buildLangMenu();
+  })();
 
   /* ── ELEMENTS ── */
   const btn       = document.getElementById('_ox-btn');
