@@ -1,4 +1,13 @@
-(function () {
+(function init() {
+  // If body isn't parsed yet (e.g. script in <head> or very early), wait for it.
+  if (!document.body) {
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', init);
+    } else {
+      setTimeout(init, 10);
+    }
+    return;
+  }
   /* ── FIND SCRIPT TAG & EXTRACT PARAMS ── */
   const scripts = document.querySelectorAll('script[src*="widget.js"]');
   const tag = scripts[scripts.length - 1];
@@ -23,6 +32,9 @@
     large:  { w: 420, h: 620 },
   };
   const SZ = SIZE_PRESETS[SIZE] || SIZE_PRESETS.medium;
+  // Accent color (hex, e.g. #22c55e). Used for hero gradient + bubble button.
+  const ACCENT_RAW = p.get('color') ? decodeURIComponent(p.get('color')) : '#5b8ee8';
+  const ACCENT = /^#[0-9a-fA-F]{6}$/.test(ACCENT_RAW) ? ACCENT_RAW : '#5b8ee8';
   // Which languages this chatbot supports (from dashboard). Default: all.
   const ENABLED_LANGS = p.get('langs') ? decodeURIComponent(p.get('langs')).split(',').map(s=>s.trim()).filter(Boolean) : null;
   const SC = {
@@ -225,7 +237,7 @@
   premiumSt.textContent = `
     #_ox-panel{height:600px!important}
     /* Gradient premium header */
-    #_ox-hd{background:linear-gradient(135deg,#5b8ee8 0%,#6ea8ff 50%,#34e1e8 110%)!important;border-bottom:none!important;padding:15px 16px!important;color:#fff}
+    #_ox-hd{background:linear-gradient(135deg,${ACCENT} 0%,${ACCENT} 60%,${ACCENT} 110%)!important;border-bottom:none!important;padding:15px 16px!important;color:#fff}
     #_ox-av{background:rgba(255,255,255,0.22)!important;color:#fff!important;font-weight:700}
     #_ox-av span{color:#fff!important}
     #_ox-biz{color:#fff!important}
@@ -236,7 +248,7 @@
     #_ox-close:hover{opacity:1}
     /* HOME view */
     #_ox-home{flex:1;overflow-y:auto;background:#fbfcff;display:flex;flex-direction:column}
-    #_ox-home-hero{padding:22px 20px 26px;background:linear-gradient(135deg,#5b8ee8 0%,#6ea8ff 50%,#34e1e8 115%);color:#fff;position:relative}
+    #_ox-home-hero{padding:22px 20px 26px;background:linear-gradient(135deg,${ACCENT} 0%,${ACCENT} 60%,${ACCENT} 115%);color:#fff;position:relative}
     #_ox-home-hero h2{margin:0;font-size:1.55rem;font-weight:750;line-height:1.25;letter-spacing:-0.01em}
     #_ox-home-hero p{margin:6px 0 0;font-size:0.98rem;opacity:0.92;font-weight:400}
     #_ox-home-cards{padding:16px 16px 18px;display:flex;flex-direction:column;gap:11px;margin-top:-14px}
@@ -245,7 +257,7 @@
     .ox-card-l{display:flex;flex-direction:column}
     .ox-card-title{font-weight:650;font-size:0.95rem;color:#16203a}
     .ox-card-sub{font-size:0.8rem;color:#7a8499;margin-top:2px}
-    .ox-card-arrow{color:#5b8ee8;font-size:1.3rem;flex-shrink:0;line-height:1}
+    .ox-card-arrow{color:${ACCENT};font-size:1.3rem;flex-shrink:0;line-height:1}
     .ox-qhead{font-size:0.7rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#9aa3b5;margin:6px 2px 2px}
     .ox-qcard{background:#fff;border:1px solid rgba(91,142,232,0.16);border-radius:13px;padding:12px 14px;cursor:pointer;font-size:0.86rem;color:#3a4a6b;font-weight:500;transition:background .15s,transform .15s,border-color .15s;display:flex;align-items:center;justify-content:space-between;gap:10px}
     .ox-qcard:hover{background:#f3f7ff;border-color:rgba(91,142,232,0.4);transform:translateX(2px)}
@@ -253,7 +265,7 @@
     /* Bottom tab bar */
     #_ox-tabs{display:flex;flex-shrink:0;border-top:1px solid rgba(0,0,0,0.06);background:#fff}
     .ox-tab{flex:1;padding:9px 0 7px;background:none;border:none;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px;color:#9aa3b5;font-size:0.66rem;font-weight:650;transition:color .15s;font-family:inherit}
-    .ox-tab.active{color:#5b8ee8}
+    .ox-tab.active{color:${ACCENT}}
     .ox-tab svg{width:21px;height:21px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
   `;
   document.head.appendChild(premiumSt);
